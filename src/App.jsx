@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Users, HelpCircle, Send, Edit3 } from "lucide-react";
@@ -14,6 +14,10 @@ import {
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
 import { supabase } from "./supabase";
+
+const particlesInit = async (main) => {
+  await loadFull(main);
+};
 
 const faqItems = [
   {
@@ -59,7 +63,8 @@ function App() {
     const fetchCount = async () => {
       const { data, error } = await supabase
         .from("clicks")
-        .select("contador")
+        .select("count")
+        .eq("id", 1)
         .single();
 
       if (error) {
@@ -67,8 +72,20 @@ function App() {
         return;
       }
 
-      if (data && data.contador !== undefined) {
-        setVisitCount(data.contador);
+      if (data && data.count !== undefined) {
+        setClickCount(data.count);
+      } else {
+        // Caso não exista o registro, cria ele com count = 0
+        const { error: insertError } = await supabase
+          .from("clicks")
+          .insert([{ id: 1, count: 0 }]);
+
+        if (insertError) {
+          console.error("Erro ao criar contador inicial:", insertError);
+          return;
+        }
+
+        setClickCount(0);
       }
     };
 
@@ -97,7 +114,6 @@ function App() {
       return;
     }
 
-    // Atualiza o estado só se deu certo no Supabase
     setClickCount(newClickCount);
 
     const encodedMessage = encodeURIComponent(message);
@@ -109,6 +125,7 @@ function App() {
       duration: 3000,
     });
   };
+
   return (
     <>
       <Helmet>
@@ -119,6 +136,7 @@ function App() {
           name="description"
           content="Está pronto para transformar seus resultados? Clique e tire todas as suas dúvidas direto comigo no WhatsApp!"
         />
+        {/* Pixel do Facebook */}
         <script>
           {`
             !function(f,b,e,v,n,t,s){
