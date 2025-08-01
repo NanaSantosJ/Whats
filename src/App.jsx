@@ -59,15 +59,16 @@ function App() {
     const fetchCount = async () => {
       const { data, error } = await supabase
         .from("clicks")
-        .select("count")
-        .eq("id", 1)
+        .select("contador")
         .single();
 
-      if (data) {
-        setClickCount(data.count);
-      } else {
-        await supabase.from("clicks").insert([{ id: 1, count: 0 }]);
-        setClickCount(0);
+      if (error) {
+        console.error("Erro ao buscar contador:", error);
+        return;
+      }
+
+      if (data && data.contador !== undefined) {
+        setVisitCount(data.contador);
       }
     };
 
