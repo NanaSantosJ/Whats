@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
-import { supabase } from "./supabase";
+import { supabase } from "./lib/supabase";
 
 const faqItems = [
   {
