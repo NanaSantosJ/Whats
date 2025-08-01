@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/accordion";
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
-import { useState, useEffect } from "react";
 import { supabase } from "./supabase";
 
 const faqItems = [
@@ -81,9 +80,24 @@ function App() {
     }
 
     const newClickCount = clickCount + 1;
-    setClickCount(newClickCount);
 
-    await supabase.from("clicks").update({ count: newClickCount }).eq("id", 1);
+    const { error } = await supabase
+      .from("clicks")
+      .update({ count: newClickCount })
+      .eq("id", 1);
+
+    if (error) {
+      console.error("Erro ao atualizar contador no Supabase:", error);
+      toast({
+        title: "Erro ao contar clique",
+        description: "Não conseguimos atualizar o número de cliques. 😔",
+        duration: 3000,
+      });
+      return;
+    }
+
+    // Atualiza o estado só se deu certo no Supabase
+    setClickCount(newClickCount);
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/5522997340446?text=${encodedMessage}`, "_blank");
